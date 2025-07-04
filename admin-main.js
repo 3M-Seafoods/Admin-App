@@ -16,7 +16,7 @@ auth.onAuthStateChanged(user => {
 });
 
 function logout() {
-  auth.signOut().then(() => location.href = "login.html");
+  auth.signOut().then(() => location.href = "index.html");
 }
 
 function checkPriceAlert() {
