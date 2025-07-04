@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Pricing & Commission</title>
+  <link rel="stylesheet" href="shared.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <script src="admin-pricing.js" defer></script>
+</head>
+
+<body>
+  <header class="header-bar">
+    <button onclick="location.href='admin-main.html'">← Dashboard</button>
+    <h1>Pricing & Commission</h1>
+    <span id="admin-user"></span>
+  </header>
+
+  <main class="dashboard">
+    <h2>Base Prices from Supplier</h2>
+    <ul id="base-prices">
+      <li>Tanigue: <span id="base-tanigue">₱0.00</span> → Final: <strong id="final-tanigue">₱0.00</strong></li>
+      <li>Shrimp 40g: <span id="base-shrimp40g">₱0.00</span> → Final: <strong id="final-shrimp40g">₱0.00</strong></li>
+      <li>Shrimp 6pcs/200g: <span id="base-shrimp200g">₱0.00</span> → Final: <strong id="final-shrimp200g">₱0.00</strong></li>
+      <li>Fresh Squid (M): <span id="base-squidM">₱0.00</span> → Final: <strong id="final-squidM">₱0.00</strong></li>
+      <li>Fresh Squid (Calamari): <span id="base-squidCalamari">₱0.00</span> → Final: <strong id="final-squidCalamari">₱0.00</strong></li>
+    </ul>
+
+    <h2>Set Commission (₱ per KG)</h2>
+    <label>Tanigue: <input id="markup-tanigue" type="number" step="0.01" /></label>
+    <label>Shrimp 40g: <input id="markup-shrimp40g" type="number" step="0.01" /></label>
+    <label>Shrimp 6pcs/200g: <input id="markup-shrimp200g" type="number" step="0.01" /></label>
+    <label>Fresh Squid (M): <input id="markup-squidM" type="number" step="0.01" /></label>
+    <label>Fresh Squid (Calamari): <input id="markup-squidCalamari" type="number" step="0.01" /></label>
+
+    <button onclick="applyMarkup()">Apply Commission</button>
+    <p id="status"></p>
+  </main>
+</body>
+
+</html>

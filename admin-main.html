@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard - 3M Seafood</title>
+  <link rel="stylesheet" href="shared.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <script src="admin-main.js" defer></script>
+</head>
+<body>
+
+  <header class="header-bar">
+    <h1>Admin Dashboard</h1>
+    <span id="admin-user">Logged in as: </span>
+    <button onclick="logout()">Logout</button>
+  </header>
+
+  <main class="dashboard">
+    <img src="images/3m-logo.png" alt="3M Seafood Logo" class="logo" />
+    <h2>Welcome to 3M Seafood Admin Panel</h2>
+    <p>Choose a section to manage:</p>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+      <button onclick="location.href='admin-users.html'">👤 Add / Edit Users</button>
+      <button onclick="location.href='admin-orders.html'">📦 Orders</button>
+      <button onclick="location.href='admin-pricing.html'">💰 Prices & Commission</button>
+      <button onclick="location.href='admin-history.html'">📜 Order History</button>
+      <button onclick="location.href='admin-earnings.html'">📊 Earnings</button>
+      <button onclick="location.href='admin-expenses.html'">💸 Expenses</button> <!-- ✅ NEW BUTTON -->
+    </div>
+
+    <p id="price-alert" style="color: red; font-weight: bold; margin-top: 20px;"></p>
+    <p id="order-alert" style="color: orange; font-weight: bold;"></p>
+  </main>
+
+</body>
+</html>

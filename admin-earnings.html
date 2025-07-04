@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Earnings</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <script src="admin-earnings.js" defer></script>
+</head>
+
+<body>
+  <header class="header-bar"> 
+    <div class="back-button">
+      <button onclick="window.location.href='admin-main.html'">← Back to Dashboard</button>
+    </div>
+    <h1>Admin - Earnings</h1>
+    <p id="admin-user">Logged in as: </p>
+  </header>
+
+  <section class="dashboard">
+    <div class="filters" style="justify-content: space-between;">
+      <label for="earnings-date"><strong>Select Month:</strong></label>
+      <input type="month" id="earnings-date" />
+    </div>
+
+    <div class="order-summary" style="background: #e0f2f1;">
+      <p id="bank-balance" style="font-size: 1.1rem; font-weight: bold; color: #00695c;">
+        💰 Bank Balance: Loading...
+      </p>
+    </div>
+
+    <div id="earnings-results" class="results"></div>
+  </section>
+</body>
+</html>

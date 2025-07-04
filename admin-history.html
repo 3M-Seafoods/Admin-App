@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Order History</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <script src="admin-history.js" defer></script>
+</head>
+<body>
+  <header class="header-bar">
+    <button onclick="location.href='admin-main.html'">← Back to Dashboard</button>
+    <h1>Order History</h1>
+    <span id="admin-user"></span>
+  </header>
+
+  <main class="dashboard">
+    <h2>Filter Orders</h2>
+    <div class="filters">
+      <label>User:
+        <select id="history-user">
+          <option value="all">All Users</option>
+        </select>
+      </label>
+      <label>Date:
+        <input type="date" id="history-date" />
+      </label>
+    </div>
+    <div id="history-results" class="results"></div>
+  </main>
+</body>
+</html>

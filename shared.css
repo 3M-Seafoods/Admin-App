@@ -1,0 +1,197 @@
+/* shared.css - Responsive Style for Ordering, Supplier, and Admin Apps */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f2f8f7;
+  color: #222;
+  min-height: 100vh;
+}
+
+.logo {
+  display: block;
+  margin: 30px auto 10px auto;
+  max-width: 120px;
+  height: auto;
+}
+
+.login-container,
+.dashboard,
+.order-section {
+  width: 90%;
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+h1, h2 {
+  text-align: center;
+  color: #00695c;
+  margin-top: 0;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0 20px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #00796b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #004d40;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+p#status {
+  color: red;
+  text-align: center;
+  font-weight: bold;
+}
+
+.order-summary {
+  margin-top: 20px;
+  padding: 10px;
+  background: #e0f2f1;
+  border: 1px solid #00796b;
+  border-radius: 8px;
+}
+
+.order-summary li {
+  list-style: none;
+  padding: 6px 0;
+  border-bottom: 1px dashed #ccc;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+img.product-photo {
+  max-width: 100px;
+  border-radius: 6px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.product-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.product-row input {
+  flex: 1 1 150px;
+  margin-left: 10px;
+  min-width: 100px;
+}
+
+.header-bar {
+  background-color: #004d40;
+  padding: 15px 20px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.header-bar h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+.back-button {
+  margin: 15px 20px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.results {
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.order-block {
+  margin-bottom: 1.5rem;
+  background: white;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 6px;
+}
+
+.expense-item {
+  background: #fff;
+  border-left: 4px solid #00796b;
+  padding: 10px 15px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive tweaks for smaller screens */
+@media (max-width: 768px) {
+  .header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .product-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .product-row input {
+    margin-left: 0;
+    margin-top: 10px;
+    width: 100%;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  button {
+    font-size: 1rem;
+  }
+}

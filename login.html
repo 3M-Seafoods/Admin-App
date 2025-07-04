@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>3M Seafood Admin Login</title>
+  <link rel="stylesheet" href="shared.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="firebase-init.js"></script>
+</head>
+
+<body>
+  <section class="login-container">
+    <img src="images/3m-logo.png" alt="3M Seafood Logo" class="logo" />
+    <h1>Admin Login</h1>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <p id="login-status"></p>
+  </section>
+
+  <script>
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          const uid = userCredential.user.uid;
+          return db.ref("users/" + uid).once("value");
+        })
+        .then(snapshot => {
+          const role = snapshot.val()?.role;
+          if (role === "admin") {
+            location.href = "admin-main.html";
+          } else {
+            document.getElementById("login-status").textContent = "⚠️ Access denied. Admins only.";
+            auth.signOut();
+          }
+        })
+        .catch(err => {
+          document.getElementById("login-status").textContent = "❌ " + err.message;
+        });
+    }
+  </script>
+</body>
+
+</html>
