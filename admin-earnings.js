@@ -1,5 +1,5 @@
 let bankAccount = 0;
-let isBoss = false; // 👈 Flag to allow editing only for Boss Marvs
+let isBoss = false;
 
 auth.onAuthStateChanged(user => {
   if (!user) return location.href = "login.html";
@@ -14,12 +14,10 @@ auth.onAuthStateChanged(user => {
     } else {
       document.getElementById("admin-user").textContent = "Logged in as: " + displayName;
 
-      if (displayName === "Boss Marvs") {
-        isBoss = true;
-      }
+      if (displayName === "Boss Marvs") isBoss = true;
 
       loadBankAccount();
-      watchOrderCosts();
+      checkAndDeductUndeductedOrders();
     }
   });
 });
@@ -31,19 +29,17 @@ function loadBankAccount() {
     const val = snapshot.val();
     bankAccount = val?.total || 0;
 
-    let html = `💰 Company Bank: ₱<span id="bank-amount">${bankAccount.toFixed(2)}</span><br>`;
-
-    if (isBoss) {
-      html += `
+    document.getElementById("bank-amount")?.remove();
+    document.getElementById("bank-balance").innerHTML = `
+      💰 Company Bank: ₱<span id="bank-amount">${bankAccount.toFixed(2)}</span><br>
+      ${isBoss ? `
         <button id="edit-bank-btn" onclick="showBankEdit()">✏️ Edit Bank Value</button>
         <div id="edit-bank-container" style="margin-top:8px; display:none;">
           <input id="edit-bank" type="number" step="0.01" placeholder="Enter new amount" />
           <button onclick="saveBankAmount()">💾 Save</button>
-        </div>
-      `;
-    }
-
-    document.getElementById("bank-balance").innerHTML = html;
+        </div>` : ''
+      }
+    `;
   });
 }
 
@@ -63,32 +59,44 @@ function saveBankAmount() {
     alert("Bank updated successfully!");
     document.getElementById("edit-bank-container").style.display = "none";
     document.getElementById("edit-bank-btn").style.display = "inline-block";
+
+    logBankChange("Manual Edit", newVal, newVal, `Edited by ${isBoss ? 'Boss Marvs' : 'Admin'}`);
   });
 }
 
-function watchOrderCosts() {
-  db.ref("orders").on("child_changed", snapshot => {
-    const order = snapshot.val();
-    const orderId = snapshot.key;
-    if (order?.baseCostDeducted || !order.items) return;
+function checkAndDeductUndeductedOrders() {
+  db.ref("orders").once("value").then(snapshot => {
+    const orders = snapshot.val() || {};
+    let totalDeducted = 0;
+    let updates = {};
 
-    let totalBase = 0;
-    order.items.forEach(item => {
-      const name = item.item || item.key || "Unknown";
-      const adjustedQty = parseFloat(order.supplierAdjustedItems?.[name] ?? item.qty ?? 0);
-      const basePrice = parseFloat(item.basePrice || 0);
-      totalBase += adjustedQty * basePrice;
+    Object.entries(orders).forEach(([orderId, order]) => {
+      if (order.baseCostDeducted || !order.items) return;
+
+      let totalBase = 0;
+      order.items.forEach(item => {
+        const name = item.item || item.key || "Unknown";
+        const adjustedQty = parseFloat(order.supplierAdjustedItems?.[name] ?? item.qty ?? 0);
+        const basePrice = parseFloat(item.basePrice || 0);
+        totalBase += adjustedQty * basePrice;
+      });
+
+      if (totalBase > 0) {
+        totalDeducted += totalBase;
+        updates[`orders/${orderId}/baseCostDeducted`] = true;
+        updates[`orders/${orderId}/deductedCost`] = totalBase.toFixed(2);
+      }
     });
 
-    if (totalBase > 0) {
-      const newTotal = bankAccount - totalBase;
-      db.ref("bank").set({ total: newTotal }).then(() => {
-        bankAccount = newTotal;
-        db.ref("orders/" + orderId).update({
-          baseCostDeducted: true,
-          deductedCost: totalBase.toFixed(2)
-        });
+    if (totalDeducted > 0) {
+      const newBank = bankAccount - totalDeducted;
+      updates[`bank/total`] = newBank;
+
+      db.ref().update(updates).then(() => {
+        bankAccount = newBank;
         loadBankAccount();
+        alert(`✅ Deducted ₱${totalDeducted.toFixed(2)} from bank.`);
+        logBankChange("Deduct Base Cost", -totalDeducted, newBank, "Auto-deducted from new orders");
       });
     }
   });
@@ -177,6 +185,49 @@ function markAsPaid(orderId, totalCustomer) {
       bankAccount = newTotal;
       loadBankAccount();
       loadEarnings();
+      logBankChange("Mark as Paid", totalCustomer, newTotal, `Order marked paid: ${orderId}`);
     });
+  });
+}
+
+// ✅ Logging helper
+function logBankChange(action, amount, newTotal, notes = "") {
+  const now = new Date();
+  const log = {
+    timestamp: now.toISOString(),
+    action,
+    amount,
+    newTotal,
+    notes,
+  };
+  db.ref("bankHistory").push(log);
+}
+
+// ✅ Toggle history viewer
+function toggleBankHistory() {
+  const container = document.getElementById("bank-history");
+  const isVisible = container.style.display === "block";
+
+  if (isVisible) {
+    container.style.display = "none";
+    return;
+  }
+
+  db.ref("bankHistory").orderByChild("timestamp").limitToLast(50).once("value").then(snapshot => {
+    const logs = snapshot.val() || {};
+    const entries = Object.values(logs).reverse();
+
+    container.innerHTML = entries.map(entry => {
+      const date = new Date(entry.timestamp).toLocaleString();
+      const sign = entry.amount >= 0 ? "+" : "-";
+      return `<li>
+        <strong>${entry.action}</strong> [${date}]<br>
+        Amount: ${sign}₱${Math.abs(entry.amount).toFixed(2)}<br>
+        New Total: ₱${entry.newTotal.toFixed(2)}<br>
+        <small style="color:gray;">${entry.notes}</small>
+      </li><br>`;
+    }).join("");
+
+    container.style.display = "block";
   });
 }
