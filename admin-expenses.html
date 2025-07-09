@@ -43,6 +43,10 @@
 
       <button onclick="addExpense()">➖ Submit Expense</button>
     </section>
+<div class="filters" style="margin-bottom: 1em;">
+  <label for="expense-filter-date"><strong>Filter by Month:</strong></label>
+  <input type="month" id="expense-filter-date" onchange="loadExpenses()" />
+</div>
 
     <section style="margin-top: 40px;">
       <h2>📜 Recent Expenses</h2>
