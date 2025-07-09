@@ -46,10 +46,11 @@
 
     <section style="margin-top: 40px;">
       <h2>📜 Expenses</h2>
-<div class="filters" style="margin-bottom: 1em; align-items: center;">
+      <div id="expense-summary" style="font-weight: bold; margin-bottom: 10px;"></div>
+      <div class="filters" style="margin-bottom: 1em; align-items: center;">
   <label for="expense-filter-date"><strong>Filter by Date:</strong></label>
   <input type="date" id="expense-filter-date" onchange="loadExpenses()" />
-</div>
+      </div>
       <div id="expense-list">Loading...</div>
     </section>
 
