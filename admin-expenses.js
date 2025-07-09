@@ -71,62 +71,51 @@ function addExpense() {
 }
 
 function loadExpenses() {
+  const list = document.getElementById("expense-list");
+  const summary = document.getElementById("expense-summary");
   const selectedDate = document.getElementById("expense-filter-date")?.value;
-  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const today = new Date().toISOString().slice(0, 10);
+  const targetDate = selectedDate || today;
 
   db.ref("expenses").once("value").then(snapshot => {
-    const list = document.getElementById("expense-list");
     const data = snapshot.val() || {};
-    const sorted = Object.entries(data)
-      .sort(([, a], [, b]) => new Date(b.createdAt) - new Date(a.createdAt));
+    let total = 0;
 
-    let newBalance = bankAccount;
-    const updatedExpenses = [];
-
-    const html = sorted
-      .filter(([, exp]) => {
-        const expenseDate = exp.date || "";
-        if (selectedDate) {
-          return expenseDate === selectedDate; // match exact selected date
-        } else {
-          return expenseDate === today; // default: show only today's expenses
-        }
-      })
+    const html = Object.entries(data)
+      .filter(([, exp]) => exp.date === targetDate)
       .map(([key, exp]) => {
         const amount = parseFloat(exp.amount) || 0;
+        total += amount;
 
-        // Auto-deduct supplier expenses if not already deducted
-        if (exp.from === "supplier" && !exp.bankDeducted) {
-          newBalance -= amount;
-          exp.bankDeducted = true;
-          updatedExpenses.push({ key });
-        }
+        const needsApproval = exp.from === "supplier" && !exp.bankDeducted;
 
         return `
-          <div class="expense-item">
+          <div class="expense-item" style="border:1px solid #ccc; margin-bottom:10px; padding:10px;">
             <strong>${exp.name}</strong><br>
             Amount: ₱${amount.toFixed(2)}<br>
-            Date: ${exp.date}<br>
-            <small>Submitted by: ${exp.submittedBy || "Unknown"} (${exp.from})</small>
+            Submitted by: ${exp.submittedBy || "Unknown"} (${exp.from})<br>
+            ${needsApproval ? `<button onclick="approveExpense('${key}', ${amount})">✅ Approve & Deduct</button>` : `<small>✅ Already deducted</small>`}
           </div>
         `;
       }).join("");
 
-    if (updatedExpenses.length > 0) {
-      const updates = {};
-      updatedExpenses.forEach(({ key }) => {
-        updates[`expenses/${key}/bankDeducted`] = true;
-      });
-      updates[`bank/total`] = newBalance;
-
-      db.ref().update(updates).then(() => {
-        bankAccount = newBalance;
-        loadBank();
-      });
-    }
-
-    list.innerHTML = html || "<p>No expenses found for this date.</p>";
+    summary.innerHTML = `📅 Total Expenses for ${targetDate}: <strong>₱${total.toFixed(2)}</strong>`;
+    list.innerHTML = html || `<p>No expenses recorded for ${targetDate}.</p>`;
   });
 }
 
+function approveExpense(expenseId, amount) {
+  const newBalance = bankAccount - amount;
 
+  const updates = {
+    [`expenses/${expenseId}/bankDeducted`]: true,
+    "bank/total": newBalance,
+  };
+
+  db.ref().update(updates).then(() => {
+    bankAccount = newBalance;
+    alert(`Expense approved. Deducted ₱${amount.toFixed(2)} from bank.`);
+    loadBank();
+    loadExpenses();
+  });
+}
