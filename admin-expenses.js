@@ -71,7 +71,8 @@ function addExpense() {
 }
 
 function loadExpenses() {
-  const selectedMonth = document.getElementById("expense-filter-date")?.value; // format: YYYY-MM
+  const selectedDate = document.getElementById("expense-filter-date")?.value;
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
   db.ref("expenses").once("value").then(snapshot => {
     const list = document.getElementById("expense-list");
@@ -84,8 +85,12 @@ function loadExpenses() {
 
     const html = sorted
       .filter(([, exp]) => {
-        if (!selectedMonth) return true; // no filter
-        return exp.date?.startsWith(selectedMonth); // filter by selected month
+        const expenseDate = exp.date || "";
+        if (selectedDate) {
+          return expenseDate === selectedDate; // match exact selected date
+        } else {
+          return expenseDate === today; // default: show only today's expenses
+        }
       })
       .map(([key, exp]) => {
         const amount = parseFloat(exp.amount) || 0;
@@ -94,7 +99,7 @@ function loadExpenses() {
         if (exp.from === "supplier" && !exp.bankDeducted) {
           newBalance -= amount;
           exp.bankDeducted = true;
-          updatedExpenses.push({ key, exp });
+          updatedExpenses.push({ key });
         }
 
         return `
@@ -107,7 +112,6 @@ function loadExpenses() {
         `;
       }).join("");
 
-    // If supplier expenses were not deducted, update them now
     if (updatedExpenses.length > 0) {
       const updates = {};
       updatedExpenses.forEach(({ key }) => {
@@ -117,11 +121,12 @@ function loadExpenses() {
 
       db.ref().update(updates).then(() => {
         bankAccount = newBalance;
-        loadBank(); // Refresh bank display
+        loadBank();
       });
     }
 
-    list.innerHTML = html || "<p>No expenses found for this month.</p>";
+    list.innerHTML = html || "<p>No expenses found for this date.</p>";
   });
 }
+
 
