@@ -71,7 +71,12 @@ function checkAndDeductUndeductedOrders() {
     let updates = {};
 
     Object.entries(orders).forEach(([orderId, order]) => {
-      if (order.baseCostDeducted || !order.items) return;
+      if (
+        order.baseCostDeducted || 
+        !order.items || 
+        !order.status || 
+        order.status.toLowerCase() !== "for delivery"
+      ) return;
 
       let totalBase = 0;
       order.items.forEach(item => {
@@ -96,11 +101,12 @@ function checkAndDeductUndeductedOrders() {
         bankAccount = newBank;
         loadBankAccount();
         alert(`✅ Deducted ₱${totalDeducted.toFixed(2)} from bank.`);
-        logBankChange("Deduct Base Cost", -totalDeducted, newBank, "Auto-deducted from new orders");
+        logBankChange("Deduct Base Cost", -totalDeducted, newBank, "Auto-deducted from 'for delivery' orders");
       });
     }
   });
 }
+
 
 function loadEarnings() {
   const selectedDate = document.getElementById("earnings-date").value;
