@@ -71,12 +71,14 @@ function checkAndDeductUndeductedOrders() {
     let updates = {};
 
     Object.entries(orders).forEach(([orderId, order]) => {
-      if (
-        order.baseCostDeducted || 
-        !order.items || 
-        !order.status || 
-        order.status.toLowerCase() !== "for delivery"
-      ) return;
+      const status = (order.status || "").toLowerCase();
+      const alreadyDeducted = order.baseCostDeducted;
+      const hasItems = Array.isArray(order.items) && order.items.length > 0;
+
+      if (alreadyDeducted || !hasItems || status !== "for delivery") {
+        console.log(`Skipping order ${orderId} — Status: ${order.status}, Already Deducted: ${alreadyDeducted}`);
+        return;
+      }
 
       let totalBase = 0;
       order.items.forEach(item => {
@@ -90,6 +92,7 @@ function checkAndDeductUndeductedOrders() {
         totalDeducted += totalBase;
         updates[`orders/${orderId}/baseCostDeducted`] = true;
         updates[`orders/${orderId}/deductedCost`] = totalBase.toFixed(2);
+        console.log(`✅ Will deduct ₱${totalBase.toFixed(2)} for order ${orderId}`);
       }
     });
 
@@ -103,9 +106,12 @@ function checkAndDeductUndeductedOrders() {
         alert(`✅ Deducted ₱${totalDeducted.toFixed(2)} from bank.`);
         logBankChange("Deduct Base Cost", -totalDeducted, newBank, "Auto-deducted from 'for delivery' orders");
       });
+    } else {
+      console.log("✅ No eligible orders to deduct.");
     }
   });
 }
+
 
 
 function loadEarnings() {
