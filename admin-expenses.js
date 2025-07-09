@@ -114,8 +114,30 @@ function approveExpense(expenseId, amount) {
 
   db.ref().update(updates).then(() => {
     bankAccount = newBalance;
-    alert(`Expense approved. Deducted ₱${amount.toFixed(2)} from bank.`);
     loadBank();
     loadExpenses();
+
+    // ✅ Log the approval in bankHistory
+    logBankChange(
+      "Approve Expense",
+      -amount,
+      newBalance,
+      `Approved supplier expense: ${expenseId}`
+    );
+
+    alert(`✅ Expense approved and logged. ₱${amount.toFixed(2)} deducted from bank.`);
   });
+}
+
+
+function logBankChange(action, amount, newTotal, notes = "") {
+  const now = new Date();
+  const log = {
+    timestamp: now.toISOString(),
+    action,
+    amount,
+    newTotal,
+    notes,
+  };
+  db.ref("bankHistory").push(log);
 }
