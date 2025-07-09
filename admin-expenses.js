@@ -71,6 +71,8 @@ function addExpense() {
 }
 
 function loadExpenses() {
+  const selectedMonth = document.getElementById("expense-filter-date")?.value; // format: YYYY-MM
+
   db.ref("expenses").once("value").then(snapshot => {
     const list = document.getElementById("expense-list");
     const data = snapshot.val() || {};
@@ -80,30 +82,35 @@ function loadExpenses() {
     let newBalance = bankAccount;
     const updatedExpenses = [];
 
-    const html = sorted.map(([key, exp]) => {
-      const amount = parseFloat(exp.amount) || 0;
+    const html = sorted
+      .filter(([, exp]) => {
+        if (!selectedMonth) return true; // no filter
+        return exp.date?.startsWith(selectedMonth); // filter by selected month
+      })
+      .map(([key, exp]) => {
+        const amount = parseFloat(exp.amount) || 0;
 
-      // Auto-deduct supplier expenses if not already deducted
-      if (exp.from === "supplier" && !exp.bankDeducted) {
-        newBalance -= amount;
-        exp.bankDeducted = true;
-        updatedExpenses.push({ key, exp });
-      }
+        // Auto-deduct supplier expenses if not already deducted
+        if (exp.from === "supplier" && !exp.bankDeducted) {
+          newBalance -= amount;
+          exp.bankDeducted = true;
+          updatedExpenses.push({ key, exp });
+        }
 
-      return `
-        <div class="expense-item">
-          <strong>${exp.name}</strong><br>
-          Amount: ₱${amount.toFixed(2)}<br>
-          Date: ${exp.date}<br>
-          <small>Submitted by: ${exp.submittedBy || "Unknown"} (${exp.from})</small>
-        </div>
-      `;
-    }).join("");
+        return `
+          <div class="expense-item">
+            <strong>${exp.name}</strong><br>
+            Amount: ₱${amount.toFixed(2)}<br>
+            Date: ${exp.date}<br>
+            <small>Submitted by: ${exp.submittedBy || "Unknown"} (${exp.from})</small>
+          </div>
+        `;
+      }).join("");
 
-    // If supplier expenses were not deducted, deduct them now
+    // If supplier expenses were not deducted, update them now
     if (updatedExpenses.length > 0) {
       const updates = {};
-      updatedExpenses.forEach(({ key, exp }) => {
+      updatedExpenses.forEach(({ key }) => {
         updates[`expenses/${key}/bankDeducted`] = true;
       });
       updates[`bank/total`] = newBalance;
@@ -114,6 +121,7 @@ function loadExpenses() {
       });
     }
 
-    list.innerHTML = html || "<p>No expenses recorded yet.</p>";
+    list.innerHTML = html || "<p>No expenses found for this month.</p>";
   });
 }
+
