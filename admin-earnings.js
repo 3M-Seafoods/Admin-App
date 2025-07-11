@@ -75,7 +75,7 @@ function checkAndDeductUndeductedOrders() {
       const alreadyDeducted = order.baseCostDeducted;
       const hasItems = Array.isArray(order.items) && order.items.length > 0;
 
-      if (alreadyDeducted || !hasItems || status !== "for delivery") {
+      if (alreadyDeducted || !hasItems || status === "pending") {
         console.log(`Skipping order ${orderId} — Status: ${order.status}, Already Deducted: ${alreadyDeducted}`);
         return;
       }
@@ -104,13 +104,14 @@ function checkAndDeductUndeductedOrders() {
         bankAccount = newBank;
         loadBankAccount();
         alert(`✅ Deducted ₱${totalDeducted.toFixed(2)} from bank.`);
-        logBankChange("Deduct Base Cost", -totalDeducted, newBank, "Auto-deducted from 'for delivery' orders");
+        logBankChange("Deduct Base Cost", -totalDeducted, newBank, "Auto-deducted from non-pending orders");
       });
     } else {
       console.log("✅ No eligible orders to deduct.");
     }
   });
 }
+
 
 
 
