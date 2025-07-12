@@ -32,6 +32,7 @@ function loadBankAccount() {
     document.getElementById("bank-amount")?.remove();
     document.getElementById("bank-balance").innerHTML = `
       💰 Company Bank: ₱<span id="bank-amount">${bankAccount.toFixed(2)}</span><br>
+      <div id="yearly-summary" style="margin-top: 10px; font-size: 0.95rem;"></div>
       ${isBoss ? `
         <button id="edit-bank-btn" onclick="showBankEdit()">✏️ Edit Bank Value</button>
         <div id="edit-bank-container" style="margin-top:8px; display:none;">
@@ -40,8 +41,61 @@ function loadBankAccount() {
         </div>` : ''
       }
     `;
+    
+    loadYearlySummary();
   });
 }
+
+function loadYearlySummary() {
+  const currentYear = new Date().getFullYear().toString();
+  let paidTotal = 0;
+  let unpaidTotal = 0;
+  let paidCommission = 0;
+  let unpaidCommission = 0;
+
+  db.ref("orders").once("value").then(snapshot => {
+    const orders = snapshot.val() || {};
+
+    Object.values(orders).forEach(order => {
+      if (!order.date?.startsWith(currentYear)) return;
+
+      let totalCustomer = 0;
+      let totalBase = 0;
+
+      (order.items || []).forEach(item => {
+        const name = item.item || item.key || "Unknown";
+        const adjustedQty = parseFloat(order.supplierAdjustedItems?.[name] ?? item.qty ?? 0);
+        const unitPrice = parseFloat(item.unitPrice || 0);
+        const basePrice = parseFloat(item.basePrice || 0);
+
+        totalCustomer += adjustedQty * unitPrice;
+        totalBase += adjustedQty * basePrice;
+      });
+
+      const commission = totalCustomer - totalBase;
+
+      if (order.isPaid) {
+        paidTotal += totalCustomer;
+        paidCommission += commission;
+      } else {
+        unpaidTotal += totalCustomer;
+        unpaidCommission += commission;
+      }
+    });
+
+    const summaryHTML = `
+      <hr style="margin: 8px 0;">
+      <strong>📅 Yearly Summary (${currentYear})</strong><br>
+      ✅ Paid Total: ₱${paidTotal.toFixed(2)}<br>
+      ❌ Unpaid Total: ₱${unpaidTotal.toFixed(2)}<br>
+      💰 Commission (Paid): ₱${paidCommission.toFixed(2)}<br>
+      💸 Commission (Unpaid): ₱${unpaidCommission.toFixed(2)}
+    `;
+
+    document.getElementById("yearly-summary").innerHTML = summaryHTML;
+  });
+}
+
 
 function showBankEdit() {
   document.getElementById("edit-bank-container").style.display = "block";
