@@ -94,7 +94,11 @@ function loadExpenses() {
             <strong>${exp.name}</strong><br>
             Amount: ₱${amount.toFixed(2)}<br>
             Submitted by: ${exp.submittedBy || "Unknown"} (${exp.from})<br>
-            ${needsApproval ? `<button onclick="approveExpense('${key}', ${amount.toFixed(2)})">✅ Approve & Deduct</button>` : `<small>✅ Already deducted</small>`}
+            ${
+              needsApproval
+                ? `<button onclick="approveExpense('${key}', '${amount.toFixed(2)}')">✅ Approve & Deduct</button>`
+                : `<small>✅ Already deducted</small>`
+            }
           </div>
         `;
       }).join("");
@@ -104,7 +108,8 @@ function loadExpenses() {
   });
 }
 
-function approveExpense(expenseId, amount) {
+function approveExpense(expenseId, amountStr) {
+  const amount = parseFloat(amountStr);
   const newBalance = bankAccount - amount;
 
   const updates = {
