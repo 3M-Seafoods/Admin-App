@@ -60,6 +60,29 @@ function addExpense() {
     expenseRef.set(expenseData),
     db.ref("bank").set({ total: newBalance })
   ]).then(() => {
+    // ✅ Log the admin-created expense in bankHistory
+    logBankChange(
+      "Admin Expense",
+      -amount,
+      newBalance,
+      `Admin created expense: ${name}`
+    );
+
+    bankAccount = newBalance;
+    alert("Expense recorded and bank updated.");
+    document.getElementById("expense-name").value = "";
+    document.getElementById("expense-amount").value = "";
+    document.getElementById("expense-date").value = "";
+    loadBank();
+    loadExpenses();
+  });
+}
+
+
+  Promise.all([
+    expenseRef.set(expenseData),
+    db.ref("bank").set({ total: newBalance })
+  ]).then(() => {
     bankAccount = newBalance;
     alert("Expense recorded and bank updated.");
     document.getElementById("expense-name").value = "";
