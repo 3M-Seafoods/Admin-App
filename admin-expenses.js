@@ -53,30 +53,39 @@ function addExpense() {
     createdAt: new Date().toISOString(),
     submittedBy: currentUser.email || "admin",
     from: "admin",
-    bankDeducted: true // Mark as deducted so we don't deduct again in list
+    bankDeducted: true
   };
 
-  Promise.all([
-    expenseRef.set(expenseData),
-    db.ref("bank").set({ total: newBalance })
-  ]).then(() => {
-    // ✅ Log the admin-created expense in bankHistory
-    logBankChange(
-      "Admin Expense",
-      -amount,
-      newBalance,
-      `Admin created expense: ${name}`
-    );
+  expenseRef.set(expenseData)
+    .then(() => db.ref("bank").set({ total: newBalance }))
+    .then(() => {
+      // Log bank change AFTER both writes succeed
+      return db.ref("bankHistory").push({
+        timestamp: new Date().toISOString(),
+        action: "Admin Expense",
+        amount: -amount,
+        newTotal: newBalance,
+        notes: `Admin created expense: ${name}`,
+      });
+    })
+    .then(() => {
+      bankAccount = newBalance;
+      alert("✅ Expense recorded and bank updated.");
 
-    bankAccount = newBalance;
-    alert("Expense recorded and bank updated.");
-    document.getElementById("expense-name").value = "";
-    document.getElementById("expense-amount").value = "";
-    document.getElementById("expense-date").value = "";
-    loadBank();
-    loadExpenses();
-  });
+      // Reset form
+      document.getElementById("expense-name").value = "";
+      document.getElementById("expense-amount").value = "";
+      document.getElementById("expense-date").value = "";
+
+      loadBank();
+      loadExpenses();
+    })
+    .catch(error => {
+      console.error("Error saving expense or logging:", error);
+      alert("❌ Failed to record expense. Check console for details.");
+    });
 }
+
 
 
   Promise.all([
