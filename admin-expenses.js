@@ -1,3 +1,4 @@
+admin-expenses.js
 let bankAccount = 0;
 let currentUser = null;
 
@@ -5,7 +6,7 @@ auth.onAuthStateChanged(user => {
   if (!user) return location.href = "login.html";
   currentUser = user;
 
-  db.ref(`users/${user.uid}`).once("value").then(snap => {
+  db.ref(users/${user.uid}).once("value").then(snap => {
     const info = snap.val();
     if (info?.role !== "admin") {
       alert("Unauthorized");
@@ -28,7 +29,7 @@ function loadBank() {
     bankAccount = snapshot.val()?.total || 0;
     const bankDiv = document.getElementById("bank-balance");
     if (bankDiv) {
-      bankDiv.innerHTML = `💰 Current Bank Balance: ₱<strong>${bankAccount.toFixed(2)}</strong>`;
+      bankDiv.innerHTML = 💰 Current Bank Balance: ₱<strong>${bankAccount.toFixed(2)}</strong>;
     }
   });
 }
@@ -53,40 +54,8 @@ function addExpense() {
     createdAt: new Date().toISOString(),
     submittedBy: currentUser.email || "admin",
     from: "admin",
-    bankDeducted: true
+    bankDeducted: true // Mark as deducted so we don't deduct again in list
   };
-
-  expenseRef.set(expenseData)
-    .then(() => db.ref("bank").set({ total: newBalance }))
-    .then(() => {
-      // Log bank change AFTER both writes succeed
-      return db.ref("bankHistory").push({
-        timestamp: new Date().toISOString(),
-        action: "Admin Expense",
-        amount: -amount,
-        newTotal: newBalance,
-        notes: `Admin created expense: ${name}`,
-      });
-    })
-    .then(() => {
-      bankAccount = newBalance;
-      alert("✅ Expense recorded and bank updated.");
-
-      // Reset form
-      document.getElementById("expense-name").value = "";
-      document.getElementById("expense-amount").value = "";
-      document.getElementById("expense-date").value = "";
-
-      loadBank();
-      loadExpenses();
-    })
-    .catch(error => {
-      console.error("Error saving expense or logging:", error);
-      alert("❌ Failed to record expense. Check console for details.");
-    });
-}
-
-
 
   Promise.all([
     expenseRef.set(expenseData),
@@ -121,18 +90,18 @@ function loadExpenses() {
 
         const needsApproval = exp.from === "supplier" && !exp.bankDeducted;
 
-        return `
+        return 
           <div class="expense-item" style="border:1px solid #ccc; margin-bottom:10px; padding:10px;">
             <strong>${exp.name}</strong><br>
             Amount: ₱${amount.toFixed(2)}<br>
             Submitted by: ${exp.submittedBy || "Unknown"} (${exp.from})<br>
-            ${needsApproval ? `<button onclick="approveExpense('${key}', ${amount})">✅ Approve & Deduct</button>` : `<small>✅ Already deducted</small>`}
+            ${needsApproval ? <button onclick="approveExpense('${key}', ${amount})">✅ Approve & Deduct</button> : <small>✅ Already deducted</small>}
           </div>
-        `;
+        ;
       }).join("");
 
-    summary.innerHTML = `📅 Total Expenses for ${targetDate}: <strong>₱${total.toFixed(2)}</strong>`;
-    list.innerHTML = html || `<p>No expenses recorded for ${targetDate}.</p>`;
+    summary.innerHTML = 📅 Total Expenses for ${targetDate}: <strong>₱${total.toFixed(2)}</strong>;
+    list.innerHTML = html || <p>No expenses recorded for ${targetDate}.</p>;
   });
 }
 
@@ -140,7 +109,7 @@ function approveExpense(expenseId, amount) {
   const newBalance = bankAccount - amount;
 
   const updates = {
-    [`expenses/${expenseId}/bankDeducted`]: true,
+    [expenses/${expenseId}/bankDeducted]: true,
     "bank/total": newBalance,
   };
 
@@ -154,10 +123,10 @@ function approveExpense(expenseId, amount) {
       "Approve Expense",
       -amount,
       newBalance,
-      `Approved supplier expense: ${expenseId}`
+      Approved supplier expense: ${expenseId}
     );
 
-    alert(`✅ Expense approved and logged. ₱${amount.toFixed(2)} deducted from bank.`);
+    alert(✅ Expense approved and logged. ₱${amount.toFixed(2)} deducted from bank.);
   });
 }
 
