@@ -53,7 +53,7 @@ function addExpense() {
     createdAt: new Date().toISOString(),
     submittedBy: currentUser.email || "admin",
     from: "admin",
-    bankDeducted: true // Mark as deducted so we don't deduct again in list
+    bankDeducted: true
   };
 
   Promise.all([
@@ -94,7 +94,7 @@ function loadExpenses() {
             <strong>${exp.name}</strong><br>
             Amount: ₱${amount.toFixed(2)}<br>
             Submitted by: ${exp.submittedBy || "Unknown"} (${exp.from})<br>
-            ${needsApproval ? `<button onclick="approveExpense('${key}', ${amount})">✅ Approve & Deduct</button>` : `<small>✅ Already deducted</small>`}
+            ${needsApproval ? `<button onclick="approveExpense('${key}', ${amount.toFixed(2)})">✅ Approve & Deduct</button>` : `<small>✅ Already deducted</small>`}
           </div>
         `;
       }).join("");
