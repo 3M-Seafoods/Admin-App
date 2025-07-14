@@ -1,4 +1,3 @@
-admin-expenses.js
 let bankAccount = 0;
 let currentUser = null;
 
@@ -6,7 +5,7 @@ auth.onAuthStateChanged(user => {
   if (!user) return location.href = "login.html";
   currentUser = user;
 
-  db.ref(users/${user.uid}).once("value").then(snap => {
+  db.ref(`users/${user.uid}`).once("value").then(snap => {
     const info = snap.val();
     if (info?.role !== "admin") {
       alert("Unauthorized");
@@ -29,7 +28,7 @@ function loadBank() {
     bankAccount = snapshot.val()?.total || 0;
     const bankDiv = document.getElementById("bank-balance");
     if (bankDiv) {
-      bankDiv.innerHTML = 💰 Current Bank Balance: ₱<strong>${bankAccount.toFixed(2)}</strong>;
+      bankDiv.innerHTML = `💰 Current Bank Balance: ₱<strong>${bankAccount.toFixed(2)}</strong>`;
     }
   });
 }
@@ -90,18 +89,18 @@ function loadExpenses() {
 
         const needsApproval = exp.from === "supplier" && !exp.bankDeducted;
 
-        return 
+        return `
           <div class="expense-item" style="border:1px solid #ccc; margin-bottom:10px; padding:10px;">
             <strong>${exp.name}</strong><br>
             Amount: ₱${amount.toFixed(2)}<br>
             Submitted by: ${exp.submittedBy || "Unknown"} (${exp.from})<br>
-            ${needsApproval ? <button onclick="approveExpense('${key}', ${amount})">✅ Approve & Deduct</button> : <small>✅ Already deducted</small>}
+            ${needsApproval ? `<button onclick="approveExpense('${key}', ${amount})">✅ Approve & Deduct</button>` : `<small>✅ Already deducted</small>`}
           </div>
-        ;
+        `;
       }).join("");
 
-    summary.innerHTML = 📅 Total Expenses for ${targetDate}: <strong>₱${total.toFixed(2)}</strong>;
-    list.innerHTML = html || <p>No expenses recorded for ${targetDate}.</p>;
+    summary.innerHTML = `📅 Total Expenses for ${targetDate}: <strong>₱${total.toFixed(2)}</strong>`;
+    list.innerHTML = html || `<p>No expenses recorded for ${targetDate}.</p>`;
   });
 }
 
@@ -109,7 +108,7 @@ function approveExpense(expenseId, amount) {
   const newBalance = bankAccount - amount;
 
   const updates = {
-    [expenses/${expenseId}/bankDeducted]: true,
+    [`expenses/${expenseId}/bankDeducted`]: true,
     "bank/total": newBalance,
   };
 
@@ -117,28 +116,6 @@ function approveExpense(expenseId, amount) {
     bankAccount = newBalance;
     loadBank();
     loadExpenses();
-
-    // ✅ Log the approval in bankHistory
-    logBankChange(
-      "Approve Expense",
-      -amount,
-      newBalance,
-      Approved supplier expense: ${expenseId}
-    );
-
-    alert(✅ Expense approved and logged. ₱${amount.toFixed(2)} deducted from bank.);
+    alert(`✅ Expense approved. ₱${amount.toFixed(2)} deducted from bank.`);
   });
-}
-
-
-function logBankChange(action, amount, newTotal, notes = "") {
-  const now = new Date();
-  const log = {
-    timestamp: now.toISOString(),
-    action,
-    amount,
-    newTotal,
-    notes,
-  };
-  db.ref("bankHistory").push(log);
 }
