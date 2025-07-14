@@ -56,18 +56,23 @@ function addExpense() {
     bankDeducted: true
   };
 
-  Promise.all([
-    expenseRef.set(expenseData),
-    db.ref("bank").set({ total: newBalance })
-  ]).then(() => {
-    bankAccount = newBalance;
-    alert("Expense recorded and bank updated.");
-    document.getElementById("expense-name").value = "";
-    document.getElementById("expense-amount").value = "";
-    document.getElementById("expense-date").value = "";
-    loadBank();
-    loadExpenses();
-  });
+  // Step-by-step chaining with bank history logging
+  expenseRef.set(expenseData)
+    .then(() => db.ref("bank").set({ total: newBalance }))
+    .then(() => logBankChange("Admin Expense", -amount, newBalance, name))
+    .then(() => {
+      bankAccount = newBalance;
+      alert("✅ Expense recorded and bank updated.");
+      document.getElementById("expense-name").value = "";
+      document.getElementById("expense-amount").value = "";
+      document.getElementById("expense-date").value = "";
+      loadBank();
+      loadExpenses();
+    })
+    .catch(err => {
+      console.error("❌ Failed to save expense or log bank history:", err);
+      alert("❌ Something went wrong. Check console for details.");
+    });
 }
 
 function loadExpenses() {
@@ -121,6 +126,20 @@ function approveExpense(expenseId, amountStr) {
     bankAccount = newBalance;
     loadBank();
     loadExpenses();
-    alert(`✅ Expense approved. ₱${amount.toFixed(2)} deducted from bank.`);
+    logBankChange("Approve Expense", -amount, newBalance, `Approved supplier expense: ${expenseId}`);
+    alert(`✅ Expense approved and logged. ₱${amount.toFixed(2)} deducted from bank.`);
   });
+}
+
+// ✅ Logging helper
+function logBankChange(action, amount, newTotal, notes = "") {
+  const now = new Date();
+  const log = {
+    timestamp: now.toISOString(),
+    action,
+    amount,
+    newTotal,
+    notes,
+  };
+  return db.ref("bankHistory").push(log);
 }
